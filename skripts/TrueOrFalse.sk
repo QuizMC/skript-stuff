@@ -1,0 +1,86 @@
+options:
+    cooldown: 5 minute
+
+import:
+    java.lang.Class
+    java.net.URI
+    java.net.http.HttpClient
+    java.net.http.HttpRequest
+    java.net.http.HttpResponse
+    java.io.File
+    com.google.gson.Gson
+    com.google.gson.JsonObject
+    org.bukkit.Bukkit
+    java.util.Base64
+
+every {@cooldown}:
+    startTrivia()
+
+function smallCaps(t: string) :: string:
+    loop {-Chars::*}:
+        replace loop-value in {_t} with {-smallChar::%loop-index%}
+    return {_t}
+
+function decodeBase64(t: string) :: string:
+    return new String(Base64.getDecoder().decode({_t}))
+
+on load:
+    set {-smallChar::*} to "ᴀ", "ʙ", "ᴄ", "ᴅ", "ᴇ", "ғ", "ɢ", "ʜ", "ɪ", "ᴊ", "ᴋ", "ʟ", "ᴍ", "ɴ", "ᴏ", "ᴘ", "ǫ", "ʀ", "s", "ᴛ", "ᴜ", "ᴠ", "ᴡ", "x", "ʏ", "ᴢ"
+    set {-Chars::*} to "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+    if Class.forName("com.google.gson.Gson"):
+        create section stored in {trivia::section}:
+            set {_url} to raw "https://opentdb.com/api.php?amount=1&type=boolean&encode=base64"
+            set {_client} to HttpClient.newHttpClient()
+            set {_request} to HttpRequest.newBuilder().uri(new URI({_url})).build()
+            set {_response} to {_client}.send({_request}, HttpResponse.BodyHandlers.ofString())
+            set {_json} to {_response}.body()
+            set {_gson} to new Gson()
+            set {_object} to {_gson}.fromJson({_json}, JsonObject)
+            set {_results} to {_object}.getAsJsonArray("results")
+            set {_result} to {_results}.get(0).getAsJsonObject()
+            # question is unescaped
+            set {_question} to {_result}.get("question").getAsString()
+            set {_answer} to {_result}.get("correct_answer").getAsString()
+            set {_question} to decodeBase64({_question})
+            set {_answer} to decodeBase64({_answer})
+            return {_question} and {_answer}
+    else:
+        set {trivia::gson} to false
+        Bukkit.getLogger().info("Gson is not found! To automatically download it, please run /trivia gson.")
+
+function startTrivia():
+    if {trivia::gson} is false:
+        broadcast "&cGson is not found! To automatically download it, please run /trivia gson."
+    else:
+        run section {trivia::section} async and store the result in {_result::*} and wait
+        if {_result::1} is set:
+            if {_result::2} is set:
+                broadcast "%nl%<##FFFF00>&lᴛʀᴜᴇ ᴏʀ ғᴀʟsᴇ &f(ʙᴇᴛᴀ)%nl%&f%smallCaps({_result::1})%%nl%"
+                set {trivia::answer} to {_result::2}
+                set {trivia::time} to now
+
+function downloadGson(p: player):
+    set {_url} to "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar"
+    set {_file} to new File("plugins/skript-reflect/gson-2.12.1.jar")
+    if {_file}.exists() is not true:
+        set {_client} to HttpClient.newHttpClient()
+        set {_request} to HttpRequest.newBuilder().uri(new URI({_url})).build()
+        set {_response} to {_client}.send({_request}, HttpResponse.BodyHandlers.ofFile({_file}.toPath()))
+        if {_response}.statusCode() is 200:
+            send "&aGson has been downloaded%nl%Please restart the server to apply changes." to {_p}
+        else:
+            send "&cFailed to download Gson with status code %{_response}.statusCode()%!" to {_p}
+    else:
+        send "&cGson is already downloaded!" to {_p}
+
+command trivia [<text>]:
+    permission: *
+    trigger:
+        if arg-1 is "gson":
+            downloadGson(player)
+        else:
+            startTrivia()
+on chat:
+    if message is {trivia::answer}:
+        broadcast "%nl%%player% has answered correctly in %difference between now and {trivia::time}%%nl%"
+        delete {trivia::answer}
