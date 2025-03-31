@@ -1,0 +1,9 @@
+function dynamicBorder(gui_size: number) :: integers:
+    set {_list::*} to all integers between 0 and 8
+    add all integers between ({_gui_size} * 9 - 9) and ({_gui_size} * 9 - 1) to {_list::*}
+    loop all integers between 0 and ({_gui_size} - 1):
+        add (loop-value * 9) to {_list::*}
+        add (loop-value * 9 + 8) to {_list::*}
+    return {_list::*}
+
+# usage: make gui slot dynamicBorder(5) with gray stained glass pane named "&8" 
