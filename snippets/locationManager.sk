@@ -8,5 +8,4 @@ command addlocation [<text>]:
             send "&fAdded %fancyLocation({_loc})% as %arg-1%."
 
 function getLocation(name: string) :: location:
-    if {server::locations::%{_name}%} is set:
-        return {server::locations::%{_name}%}
+    return {server::locations::%{_name}%}
