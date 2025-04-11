@@ -7,5 +7,8 @@ command addlocation [<text>]:
             set {server::locations::%arg-1%} to {_loc}
             send "&fAdded %fancyLocation({_loc})% as %arg-1%."
 
+function fancyLocation(loc: location) :: string:
+    return "%{_loc}.getWorld().getName%, %{_loc}.getX()%, %{_loc}.getY()%, %{_loc}.getZ()%"
+
 function getLocation(name: string) :: location:
     return {server::locations::%{_name}%}
