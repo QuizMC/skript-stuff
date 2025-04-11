@@ -1,0 +1,34 @@
+function creategameinventory(p: player, s: string):
+    set {maps::inventory::%{_s}%} to true
+    loop 36 times:
+        set {_i} to loop-value - 1
+        set {_item} to slot {_i} of {_p}'s inventory 
+        set {maps::inventory::%{_s}%::%{_i}%} to {_item}
+
+command loadgameinventory <text>:
+    permission: *
+    trigger:
+        loop {maps::inventory::%arg-1%::*}:
+            set slot (loop-index parsed as integer) of player's inventory to loop-value
+
+command inventory [<text>] [<text>]:
+    permission: *
+    trigger:
+        if arg-2 is not set:
+            send "&cPlease provide a name."
+            exit
+        if arg-1 is "create":
+            if arg-2 is set:
+                creategameinventory(player, arg-2)
+                send "&cSaved!"
+        else if arg-1 is "load":
+            if arg-2 is set:
+                loop {maps::inventory::%arg-2%::*}:
+                    set slot (loop-index parsed as integer) of player's inventory to loop-value
+                send "&cLoaded!"
+        else:
+            send "&cPlease specify a valid argument"
+
+on tab complete of "inventory":
+    set tab completions for position 1 to "create", "load"
+    set tab completions for position 2 to indexes of {maps::inventory::*}

@@ -1,0 +1,12 @@
+command addlocation [<text>]:
+    permission: *
+    trigger:
+        if arg-1 is set:
+            set {_loc} to player.getLocation()
+            set {_loc} to {_loc}.getBlock().getLocation()
+            set {server::locations::%arg-1%} to {_loc}
+            send "&fAdded %fancyLocation({_loc})% as %arg-1%."
+
+function getLocation(name: string) :: location:
+    if {server::locations::%{_name}%} is set:
+        return {server::locations::%{_name}%}

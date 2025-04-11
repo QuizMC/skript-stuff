@@ -1,0 +1,42 @@
+function saveMap(n: string):
+    set {_s} to structure named "map:%{_n}%"
+    fill {_s} between getLocation("map::1") and getLocation("map::2")
+    save structure {_s}
+    add {_n} to {maps::names::*} if {maps::names::*} doesn't contain {_n}
+
+function loadMap(n: string):
+    loop all entities within getLocation("map::1") and getLocation("map::2"):
+        if loop-entity is not player:
+            kill loop-entity
+    set {_s} to structure named "map:%{_n}%"
+    place {_s} at getLocation("map::2")
+
+function deleteMap(n: string):
+    set {_s} to structure named "map:%{_n}%"
+    delete structure {_s}
+    remove {_n} from {maps::names::*}
+
+command map [<text>] [<text>] [<text>]:
+    permission: "map.admin"
+    trigger:
+        if arg-2 is not set:
+            send "&cPlease provide a map name."
+            exit
+        if arg-1 is "save":
+            saveMap(arg-2)
+            send "&aMap '%arg-2%' saved."
+        else if arg-1 is "load":
+            loadMap(arg-2)
+            send "&aMap '%arg-2%' loaded."
+        else if arg-1 is "delete":
+            if arg-3 is "confirm":
+                deleteMap(arg-2)
+                send "&aMap '%arg-2%' deleted."
+            else:
+                send "&cTo confirm deletion, use '/map delete %arg-2% confirm'."
+        else:
+            send "&cInvalid argument."
+
+on tab complete of "map":
+    set tab completions for position 1 to "save", "load", "delete"
+    set tab completions for position 2 to {maps::names::*}
