@@ -7,8 +7,20 @@ command addlocation [<text>]:
             set {server::locations::%arg-1%} to {_loc}
             send "&fAdded %fancyLocation({_loc})% as %arg-1%."
 
-function fancyLocation(loc: location) :: string:
-    return "%{_loc}.getWorld().getName%, %{_loc}.getX()%, %{_loc}.getY()%, %{_loc}.getZ()%"
+function fancyLocation(location: location) :: string:
+    return "&f%{_location}.getX()%, %{_location}.getY()%, %{_location}.getZ()%"
 
-function getLocation(name: string) :: location:
-    return {server::locations::%{_name}%}
+function getLocation(key: string) :: location:
+    if {server::locations::%{_key}%} is set:
+        return {server::locations::%{_key}%}
+
+function getLocations(key: string) :: locations:
+    return {server::locations::%{_key}%::*}
+
+function lowestPoint(locations: locations) :: location:
+    loop {_locations::*}:
+        add loop-value.getY() to {_Y::*}
+    set {_sorted::*} to sorted indices of {_Y::*} in ascending order
+    set {_i} to {_sorted::1}
+    set {_lowest} to {_locations::%{_i}%}
+    return {_lowest}
