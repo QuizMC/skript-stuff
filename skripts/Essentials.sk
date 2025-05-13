@@ -1,0 +1,59 @@
+options:
+    quiz: <##ffff00>&lQUIZ &7→&f
+    c: <##ffff00>
+
+function player_setGamemode(p: player, g: gamemode):
+    set {_p}'s gamemode to {_g}
+    send "{@quiz} Gamemode set to {@c}%{_g}%" to {_p}
+
+command gmc:
+    trigger:
+        player_setGamemode(player, creative)
+
+command gms:
+    trigger:
+        player_setGamemode(player, survival)
+
+command gmsp:
+    trigger:
+        player_setGamemode(player, spectator)
+
+function player_setNickname(p: player, nick: string):
+    set {_p}'s display name to formatted {_nick}
+    send "{@quiz} Your nickname has been set to %formatted {_nick}%" to {_p}
+
+command nick <string>:
+    permission: master
+    trigger:
+        player_setNickname(player, arg-1)
+
+function player_toggleFlight(p: player):
+    if {_p}'s flight mode is false:
+        set {_p}'s flight mode to true
+        send "{@quiz} Your flight mode has been {@c}enabled" to {_p}
+    if {_p}'s flight mode is true:
+        set {_p}'s flight mode to false
+        send "{@quiz} Your flight mode has been {@c}disabled" to {_p}
+
+command fly:
+    permission: apprentice
+    trigger:
+        player_toggleFlight(player)
+
+on join:
+    delete {-player::vanish::%{_p}'s uuid%}
+
+function player_toggleVanish(p: player):
+    if {-player::vanish::%{_p}'s uuid%} is not set:
+        hide {_p} from all players where [input does not have permission "staff"]
+        send "{@quiz} You are now {@c}vanished" to {_p}
+        set {-player::vanish::%{_p}'s uuid%} to true
+    else:
+        reveal {_p} from all players where [input does not have permission "staff"]
+        delete {-player::vanish::%{_p}'s uuid%}
+
+command vanish:
+    aliases: v, van
+    permission: staff
+    trigger:
+        player_toggleVanish(player)
