@@ -41,7 +41,7 @@ command fly:
         player_toggleFlight(player)
 
 on join:
-    delete {-player::vanish::%{_p}'s uuid%}
+    delete {-player::vanish::%player's uuid%}
 
 function player_toggleVanish(p: player):
     if {-player::vanish::%{_p}'s uuid%} is not set:
