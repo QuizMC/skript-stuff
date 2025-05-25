@@ -41,7 +41,8 @@ command fly:
         player_toggleFlight(player)
 
 on join:
-    delete {-player::vanish::%player's uuid%}
+    delete {-player::vanish::%player's uuid%} if {-player::vanish::%player's uuid%} is set
+    hide all players where [{-player::vanish::%input's uuid%} is set] from player
 
 function player_toggleVanish(p: player):
     if {-player::vanish::%{_p}'s uuid%} is not set:
@@ -49,7 +50,7 @@ function player_toggleVanish(p: player):
         send "{@quiz} You are now {@c}vanished" to {_p}
         set {-player::vanish::%{_p}'s uuid%} to true
     else:
-        reveal {_p} from all players where [input does not have permission "staff"]
+        reveal {_p} from all players
         delete {-player::vanish::%{_p}'s uuid%}
 
 command vanish:
