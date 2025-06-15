@@ -1,0 +1,11 @@
+function formatMs(ms: number) :: string:
+    set {_l::d} to floor({_ms} / 86400000)
+    set {_l::h} to floor(mod({_ms}, 86400000) / 3600000)
+    set {_l::m} to floor(mod({_ms}, 3600000) / 60000)
+    set {_l::s} to floor(mod({_ms}, 60000) / 1000)
+    set {_l::ms} to mod({_ms}, 1000)
+    set {_result} to ""
+    loop {_l::*}:
+        if loop-value is not 0:
+            set {_result} to "%{_result}%%loop-value%%loop-index% "
+    return {_result}.replaceAll(" +$", "")
