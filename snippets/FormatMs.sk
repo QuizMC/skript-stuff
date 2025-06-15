@@ -5,7 +5,7 @@ function formatMs(ms: number) :: string:
     set {_l::s} to floor(mod({_ms}, 60000) / 1000)
     set {_l::ms} to mod({_ms}, 1000)
     set {_result} to ""
-    loop {_l::*}:
-        if loop-value is not 0:
-            set {_result} to "%{_result}%%loop-value%%loop-index% "
-    return {_result}.replaceAll(" +$", "")
+    loop "d", "h", "m", "s", "ms":
+        if {_l::%loop-value%} is not 0:
+            set {_result} to "%{_result}%%{_l::%loop-value%}%%loop-value% "
+    return {_result}.trim()
