@@ -1,0 +1,73 @@
+function saveMap(n: string):
+
+    loop all chunks within getLocation("map::1") and getLocation("map::2"):
+
+        set {_x} to loop-chunk.getX()
+        set {_z} to loop-chunk.getZ()
+        set {_corners::*} to getChunkCorners({_x}, {_z}, 191, -65)
+
+        set {_s} to structure named "%{_n}%:%hashChunk(loop-chunk)%"
+        fill {_s} between {_corners::1} and {_corners::2}
+        save structure {_s}
+        broadcast "&aSaved chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+        wait 1 tick
+        
+    add {_n} to {maps::names::*} if {maps::names::*} doesn't contain {_n}
+
+function loadMap(n: string):
+    loop all entities within getLocation("map::1") and getLocation("map::2"):
+        if loop-entity is not player:
+            kill loop-entity
+
+
+    loop shuffled all chunks within getLocation("map::1") and getLocation("map::2"):
+        set {_x} to loop-chunk.getX()
+        set {_z} to loop-chunk.getZ()
+        set {_corners::*} to getChunkCorners({_x}, {_z}, 191, -65)
+
+        set {_s} to structure named "%{_n}%:%hashChunk(loop-chunk)%"
+        if {_s} is not set:
+            broadcast "&cNo structure found for chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+            continue
+        {_corners::1}.setY(-65)
+        place structure {_s} at {_corners::1}
+        broadcast "&aLoaded chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+        chance of 30%:
+            wait 1 tick
+
+function deleteMap(n: string):
+    remove {_n} from {maps::names::*}
+    loop all chunks within getLocation("map::1") and getLocation("map::2"):
+        set {_x} to loop-chunk.getX()
+        set {_z} to loop-chunk.getZ()
+        set {_s} to structure named "%{_n}%:%hashChunk(loop-chunk)%"
+        if {_s} is set:
+            delete structure {_s}
+            broadcast "&aDeleted chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+        else:
+            broadcast "&cNo structure found for chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+
+command map [<text>] [<text>] [<text>]:
+    permission: "map.admin"
+    trigger:
+        if arg-2 is not set:
+            send "&cPlease provide a map name."
+            exit
+        if arg-1 is "save":
+            saveMap(arg-2)
+            send "&aMap '%arg-2%' saved."
+        else if arg-1 is "load":
+            loadMap(arg-2)
+            send "&aMap '%arg-2%' loaded."
+        else if arg-1 is "delete":
+            if arg-3 is "confirm":
+                deleteMap(arg-2)
+                send "&aMap '%arg-2%' deleted."
+            else:
+                send "&cTo confirm deletion, use '/map delete %arg-2% confirm'."
+        else:
+            send "&cInvalid argument."
+
+on tab complete of "map":
+    set tab completions for position 1 to "save", "load", "delete"
+    set tab completions for position 2 to {maps::names::*}
