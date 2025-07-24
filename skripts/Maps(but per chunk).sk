@@ -1,10 +1,16 @@
-function saveMap(n: string):
+import:
+    java.time.Instant
 
+function saveMap(n: string):
     loop all chunks within getLocation("map::1") and getLocation("map::2"):
 
         set {_x} to loop-chunk.getX()
         set {_z} to loop-chunk.getZ()
-        set {_corners::*} to getChunkCorners({_x}, {_z}, 191, -65)
+        set {_highestLowest::*} to getLocationsExtremes(getLocation("map::1") and getLocation("map::2"))
+        set {_lowestY} to {_highestLowest::1}.getY()
+        set {_highestY} to {_highestLowest::2}.getY()
+
+        set {_corners::*} to getChunkCorners({_x}, {_z}, {_highestY}, {_lowestY})
 
         set {_s} to structure named "%{_n}%:%hashChunk(loop-chunk)%"
         fill {_s} between {_corners::1} and {_corners::2}
@@ -15,25 +21,40 @@ function saveMap(n: string):
     add {_n} to {maps::names::*} if {maps::names::*} doesn't contain {_n}
 
 function loadMap(n: string):
+    set {_start} to Instant.now().toEpochMilli()
     loop all entities within getLocation("map::1") and getLocation("map::2"):
         if loop-entity is not player:
             kill loop-entity
 
+    set {_chunks::*} to shuffled all chunks within getLocation("map::1") and getLocation("map::2")
+    set {_size} to size of {_chunks::*}
+    set {_eta} to {_size} / (first element of tps)
+    broadcast "&aLoading map '%{_n}%' with %{_size}% chunks. Estimated time: %{_eta}% seconds."
 
-    loop shuffled all chunks within getLocation("map::1") and getLocation("map::2"):
+    set {_highestLowest::*} to getLocationsExtremes(getLocation("map::1") and getLocation("map::2"))
+    set {_lowestY} to {_highestLowest::1}.getY()
+    set {_highestY} to {_highestLowest::2}.getY()
+
+    set {_loaded} to 0
+
+    loop {_chunks::*}:
         set {_x} to loop-chunk.getX()
         set {_z} to loop-chunk.getZ()
-        set {_corners::*} to getChunkCorners({_x}, {_z}, 191, -65)
+        set {_corners::*} to getChunkCorners({_x}, {_z}, {_lowestY}, {_highestY})
 
         set {_s} to structure named "%{_n}%:%hashChunk(loop-chunk)%"
         if {_s} is not set:
-            broadcast "&cNo structure found for chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
+
             continue
-        {_corners::1}.setY(-65)
+        {_corners::1}.setY({_lowestY})
         place structure {_s} at {_corners::1}
-        broadcast "&aLoaded chunk at X: %{_x}%, Z: %{_z}% for map '%{_n}%'."
-        chance of 30%:
-            wait 1 tick
+        add 1 to {_loaded}
+        send action bar "&aLoaded chunk at %{_x}%, %{_z}% &f(%{_loaded}%/%{_size}%)" to all players
+        wait 1 tick
+    set {_end} to Instant.now().toEpochMilli()
+    set {_duration} to {_end} - {_start}
+    broadcast "&aMap '%{_n}%' loaded in %formatMs({_duration})%."
+    send action bar "&aMap '%{_n}%' loaded in %formatMs({_duration})%." to all players
 
 function deleteMap(n: string):
     remove {_n} from {maps::names::*}
@@ -55,10 +76,8 @@ command map [<text>] [<text>] [<text>]:
             exit
         if arg-1 is "save":
             saveMap(arg-2)
-            send "&aMap '%arg-2%' saved."
         else if arg-1 is "load":
             loadMap(arg-2)
-            send "&aMap '%arg-2%' loaded."
         else if arg-1 is "delete":
             if arg-3 is "confirm":
                 deleteMap(arg-2)

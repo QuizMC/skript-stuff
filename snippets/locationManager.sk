@@ -17,13 +17,15 @@ function getLocation(key: string) :: location:
 function getLocations(key: string) :: locations:
     return {server::locations::%{_key}%::*}
 
-function lowestPoint(locations: locations) :: location:
+function getLocationsExtremes(locations: locations) :: locations:
     loop {_locations::*}:
         add loop-value.getY() to {_Y::*}
     set {_sorted::*} to sorted indices of {_Y::*} in ascending order
-    set {_i} to {_sorted::1}
-    set {_lowest} to {_locations::%{_i}%}
-    return {_lowest}
+    set {_lowest-index} to first element of {_sorted::*}
+    set {_lowest} to {_locations::%{_lowest-index}%}
+    set {_highest-index} to last element of {_sorted::*}
+    set {_highest} to {_locations::%{_highest-index}%}
+    return {_lowest} and {_highest}
 
 function getChunkCorners(x: integer, z: integer, minY: integer = 0, maxY: integer = 255) :: locations:
     set {_loc1} to location({_x} * 16, {_minY}, {_z} * 16)
