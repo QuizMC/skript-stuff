@@ -33,6 +33,3 @@ function getChunkCorners(x: integer, z: integer, minY: integer = 0, maxY: intege
 function hashChunk(chunk: chunk) :: integer:
     set {_str} to "%{_chunk}.getX()%-%{_chunk}.getZ()%"
     return {_str}.hashCode()
-function chunkHash(chunk: chunk) :: integer:
-    set {_str} to "%{_chunk}.getX()%-%{_chunk}.getZ()%"
-    return {_str}.hashCode()
