@@ -24,3 +24,8 @@ function lowestPoint(locations: locations) :: location:
     set {_i} to {_sorted::1}
     set {_lowest} to {_locations::%{_i}%}
     return {_lowest}
+
+function getChunkCorners(x: integer, z: integer, minY: integer = 0, maxY: integer = 255) :: locations:
+    set {_loc1} to location({_x} * 16, {_minY}, {_z} * 16)
+    set {_loc2} to location({_x} * 16 + 15, {_maxY}, {_z} * 16 + 15)
+    return {_loc1}, {_loc2}
